@@ -25,7 +25,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHashHistory('/35215704-efolio11-12/week9firebase/'),
+  history: createWebHashHistory('/'),
   routes
 })
 
