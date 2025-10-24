@@ -1,0 +1,138 @@
+<template>
+  <header class="sporty-navbar shadow sticky-top">
+    <div class="container-fluid" >
+      <nav class="navbar navbar-expand-md navbar-dark">
+        <div class="d-flex align-items-center">
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mx-auto my-2 my-md-0">
+        
+
+         <li class="nav-item">
+          <router-link to="/addbook" class="nav-link px-3" active-class="active">Add Book</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/getbookcountview" class="nav-link px-3" active-class="active">Get Book Count</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/getallbookapi" class="nav-link px-3" active-class="active">Get All Book API</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/countbookapi" class="nav-link px-3" active-class="active">Count Book API</router-link>
+        </li>
+        <li class="nav-item">
+          <router-link to="/weatherview" class="nav-link px-3" active-class="active">Get Weather</router-link>
+        </li>
+          <li v-if="!isLoggedIn" class="nav-item">
+          <router-link class="btn btn-primary ms-2" to="/Firelogin" active-class="active">Login</router-link>
+          </li>
+
+          <li v-else class="nav-item">
+            <button class="btn btn-danger ms-2" @click="logout">Logout</button>
+          </li>
+
+
+
+
+        <li v-if="userRole === 'admin'" class="nav-item">
+              <router-link to="/admin-dashboard" class="nav-link px-3 text-warning fw-bold">Admin Dashboard</router-link>
+            </li>
+
+            <li v-if="userRole === 'admin'" class="nav-item">
+              <router-link to="/admin-dashboard" class="nav-link px-3 text-warning fw-bold">Admin Profile</router-link>
+            </li>
+            <li v-if="isLoggedIn" class="nav-item d-flex align-items-center text-white ms-3">
+  <span class="badge bg-info text-dark">
+     {{ userRole }} LoggedIn
+  </span>
+</li>
+
+      </ul>
+        </div>
+      </nav>
+    </div>
+  </header>
+</template>
+<script setup>
+import { ref, onMounted } from "vue"
+import { auth, db } from "@/firebase/init"
+import { doc, getDoc } from "firebase/firestore"
+import { signOut } from "firebase/auth"
+import { useRouter } from "vue-router"
+
+const isLoggedIn = ref(false)
+const userRole = ref(null)
+const router = useRouter()
+
+// Login state
+onMounted(() => {
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      isLoggedIn.value = true
+      const docRef = doc(db, "users", user.uid)
+      const docSnap = await getDoc(docRef)
+      if (docSnap.exists()) {
+        userRole.value = docSnap.data().role
+      }
+    } else {
+      isLoggedIn.value = false
+      userRole.value = null
+    }
+  })
+})
+
+
+// Logout function
+const logout = async () => {
+  try {
+    await signOut(auth)
+    isLoggedIn.value = false
+    userRole.value = null
+    router.push("/Firelogin") 
+  } catch (error) {
+    console.error("Logout failed:", error)
+  }
+}
+</script>
+<style scoped>
+
+.sporty-navbar {
+  background: linear-gradient(90deg, #004d40, #00c896);
+}
+.brand-icon {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.nav-link {
+  color: white;
+  font-weight: 500;
+  transition: 0.3s;
+  border-radius: 8px;
+}
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-brand {
+  color: white;
+  transition: 0.3s;
+}
+
+.btn-accent,
+.btn-primary{
+  background: #ff5722;
+  color: white;
+  border: none;
+  transition: 0.3s;
+  border-radius: 8px;
+}
+.btn-accent:hover,
+.btn-primary:hover {
+  background: #e63946;
+}
+</style>
